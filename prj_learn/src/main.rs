@@ -1,11 +1,20 @@
-#[allow(dead_code)]
-#[allow(unused_variables)]
-#[allow(unused_mut)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
+mod sh;
 
 use std::mem;
 
-// Core Data Types
-#[allow(dead_code)]
+//const: An unchangeable value (the common case).
+const MEANING_OF_LIFE:u8 = 45; // no fixed address
+
+//static: A possibly mutable variable with 'static lifetime. 
+//		  The static lifetime is inferred and does not have to be specified. 
+//		  Accessing or modifying a mutable static variable is "unsafe".
+static mut Z:i32 = 123;
+
+
 fn core_data_types() {
 	// ------------------------------------------------------------------
 	// ---------------------------Integers-------------------------------
@@ -150,12 +159,43 @@ fn operators() {
 	let pi_less_4 = std::f64::consts::PI < 4.0; // true
 	let x = 5;
 	let x_is_5 = x == 5; // true
-
-	
 }
 
 
+fn scope_and_shadowing() {
+	let a = 123;
+	//shadowing
+	let a = 3210;
+
+	//scope
+	{
+		let b = 456;
+		println!("scope inside, b = {}", b);
+
+		let a = 987;
+		println!("scope inside, a = {}", a);
+	}
+
+	println!("scope outside, a = {}", a);
+
+	// println!("scope outside, b = {}", b); // not working
+}
+
 fn main() {
     //core_data_types();
-    operators();
+    
+    //operators();
+    
+    //scope_and_shadowing();
+    
+    //println!("MEANING_OF_LIFE = {}", MEANING_OF_LIFE);
+    //unsafe
+    //{
+    //	println!("Z = {}", Z);
+    //	Z = 456;
+    //	println!("new Z = {}", Z);
+    //}
+
+    sh::stack_and_heap();
+
 }
