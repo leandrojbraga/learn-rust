@@ -181,6 +181,187 @@ fn scope_and_shadowing() {
 	// println!("scope outside, b = {}", b); // not working
 }
 
+
+fn if_statement(){
+	let temp = 35;
+
+	if temp > 30 {
+		println!("really hot outside");
+	}
+	else if temp < 10 {
+		println!("really cold!");
+	}
+	else {
+		println!("temperature is OK");
+	}
+
+	let today = if temp > 20 {"sunny"} else {"cloudy"};
+	println!("today is {}", today);
+
+	println!("it is {}", 
+		if temp > 20 {"hot"} else if temp < 10 {"cold"} else {"OK"}
+	);
+
+	println!("it is {}", 
+		if temp > 20 {
+			if temp > 30 {"very hot"} else {"hot"}
+		} else if temp < 10 {"cold"} else {"OK"}
+	);
+}
+
+
+fn while_and_loop() {
+	let mut x = 1;
+
+	while x < 1000 {
+		x *= 2;
+
+		if x == 64 { continue; }
+
+		println!("x = {}", x);
+	}
+
+	let mut y = 1;
+
+	loop { // while true
+		y *= 2;
+
+		println!("y = {}", y);
+
+		if y == 1<<10 { break; }	 
+
+	}
+}
+
+fn for_loop() {
+
+	for x in 1..11 { // [1,2,3,4,5,6,7,8,9,10]
+		if x == 3 { continue; }
+
+		if x == 8 { break; }
+
+		println!("x = {}", x);
+	}
+
+	print!("reverse count ");
+	for y in (1..4).rev() { // [3,2,1]
+		print!("{}...", y);
+	} 
+	println!("0");
+
+	for (i,z) in (30..41).enumerate() {
+		println!("{}: {}", i, z);
+	}
+
+	let numbers = 1..=5;
+
+	for n in numbers {
+        println!("the value is: {}", n);
+    }
+
+    let a = [10, 20, 30, 40, 50];
+
+    for element in a.iter() {
+        println!("the value is: {}", element);
+    }
+
+	
+}
+
+
+fn match_country(country_code:u32) -> String {
+	match country_code {
+		44 => "UK",
+		45 => "BR",
+		46 => "Sweden",
+		7 => "Russia",
+		1..=1000  => "unknown", // value between 1..1000 (except the list up)
+		_ => "invalid" // other value, is the default return. if comment: non-exhaustive patterns: `0_u32`
+	}.to_string()
+}
+
+fn match_statement() {
+	let mut country_code:u32 = 45;
+	println!("The country with code {} is {}", country_code, match_country(country_code));
+
+	country_code = 7;
+	println!("The country with code {} is {}", country_code, match_country(country_code));
+
+	country_code = 10;
+	println!("The country with code {} is {}", country_code, match_country(country_code));
+
+	country_code = 1001;
+	println!("The country with code {} is {}", country_code, match_country(country_code));
+
+	let truth = true;
+	let result = match truth {
+		true => "truth",
+		false => "lie" // if comment: non-exhaustive patterns: `false` not covered
+		//to match bool type is not necessary a default return
+	};
+	println!("It is {}",result);
+
+}
+
+use std::io::stdin;
+
+enum State {
+	Locked,
+	Failed,
+	Unlocked
+}
+
+fn combination_lock() {
+	let pass = String::from("1234");
+	let mut tries:u8 = 0;
+	let limit:u8 = 3;
+	let mut state = State::Locked;
+	let mut entry = String::new();
+
+
+	loop {
+		match state {
+			State::Locked => {
+				let mut input = String::new();
+				tries += 1;
+				println!("Password: ");
+				match stdin().read_line(&mut input) {
+					Ok(_) => {
+						entry.push_str(&input.trim_end());
+					}
+					Err(_) => continue
+				}
+				if entry == pass {
+					state = State::Unlocked;
+					continue;
+				}
+				else {
+					state = State::Failed;
+				}
+			}
+			State::Failed => {
+				print!("FAILED! ");
+				if (limit - tries) == 0 {
+					println!("Account blocked. Try again in a few minutes.");
+					return;
+				}
+				else {
+					println!("Try again. You have {} more attempts", (limit - tries));
+					entry.clear(); // entry = "";
+					state = State::Locked;
+					continue;
+				}
+			}
+			State::Unlocked => {
+				println!("UNLOCKED!!!");
+				println!("Welcome to Rust!");
+				return;
+			}
+		}
+	}
+}
+
+
 fn main() {
     //core_data_types();
     
@@ -196,6 +377,15 @@ fn main() {
     //	println!("new Z = {}", Z);
     //}
 
-    sh::stack_and_heap();
+    //sh::stack_and_heap();
 
+    //if_statement();
+
+    //while_and_loop();
+
+    //for_loop();
+
+    //match_statement();
+
+    combination_lock();
 }
