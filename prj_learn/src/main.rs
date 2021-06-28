@@ -3,6 +3,8 @@
 #![allow(unused_mut)]
 
 mod sh;
+mod pm;
+mod structures;
 
 use std::mem;
 
@@ -362,6 +364,191 @@ fn combination_lock() {
 }
 
 
+enum Color {
+	Red,
+	Green,
+	Blue,
+	RgbColor(u8, u8, u8), // tuple
+	CmykColor{cyan:u8, magenta:u8, yellow:u8, black:u8}, //struct
+}
+
+fn match_color(c: Color) {
+	match c {
+		Color::Red => println!("R"),
+		Color::Green => println!("G"),
+		Color::Blue => println!("B"),
+		Color::RgbColor(0,0,0)
+		| Color::CmykColor{cyan:_, magenta:_, yellow:_, black:255} => println!("Black"), // only is black:255
+		Color::CmykColor{yellow:255,..} => println!("Yellow"), // only is yellow:255
+		Color::RgbColor(r,g,b) => println!("rgb({},{},{})", r,g,b),
+		_ => ()
+	}
+}
+
+fn enumerates() {
+	let mut c:Color = Color::Red;
+	match_color(c);
+
+	c = Color::RgbColor(0,0,0);
+	match_color(c);
+
+	c = Color::RgbColor(1,54,176);
+	match_color(c);
+
+	c = Color::CmykColor{cyan:1, magenta:45, yellow:34, black:23};
+	match_color(c);
+
+	c = Color::CmykColor{cyan:1, magenta:45, yellow:34, black:255};
+	match_color(c);
+
+	c = Color::CmykColor{cyan:1, magenta:45, yellow:255, black:25};
+	match_color(c);
+
+}
+
+fn option_t_and_if_let_while_let() {
+	let x = 3.0;
+	let y = 2.0;
+
+	//Option -> Some(v) | None
+	let result =
+		if y != 0.0 { Some(x/y) } else { None };
+
+	match result {
+		Some(z) => println!("{}/{}={}", x,y,z),
+		None => println!("cannot divide by zero")
+	}
+
+	if let Some(z) = result {
+		println!("result = {}", z);
+	}
+}
+
+fn arrays(){
+	let mut numbers:[i32;5] = [1,2,3,4,5];
+
+	println!("numbers has {} elements, first is {}", numbers.len(), numbers[0]);
+
+	numbers[0] = 9;
+	println!("numbers[0] = {}", numbers[0]);
+
+	//print debug
+	println!("{:?}", numbers);
+
+	if numbers != [1,2,3,4,5] {
+		println!("does not match");
+	}
+
+	if numbers == [9,2,3,4,5] {
+		println!("match");
+	}
+
+	//if numbers == [9,2,3,4,5, 6] { () } // error: can't compare `[i32; 5]` with `[i32; 6]` (different size elements)
+
+	let b = [1; 10];
+	println!("b = {:?}, took up {} bytes", b, mem::size_of_val(&b));
+
+	let c = [1u8; 10];
+	println!("c = {:?}, took up {} bytes", c, mem::size_of_val(&c));
+
+	let mtx:[[f32;3];2] = 
+	[
+		[1.2, 3.1, 0.0],
+		[3.2, 0.1, 1.0]
+	];
+
+	println!("{:?}", mtx);
+
+	for r in 0..mtx.len() {
+		for c in 0..mtx[r].len() {
+			if r == c {
+				println!("mtx[{}][{}] = {}", r, c, mtx[r][c]);
+			}
+		}
+	}
+
+}
+
+fn slices() {
+	let mut data = [1,2,3,4,5];
+
+	//let slice:&[i32] = &data[1..4];
+	//println!("slice first elem = {}, len = {}", slice[0], slice.len());
+	//slice[0] = 87; // error: cannot assign to `slice[_]` which is behind a `&` reference
+	//println!("slice {:?}", slice);
+	//println!("data = {:?}", data);
+
+	let slice: &mut[i32] = &mut data[1..4];
+	println!("slice first elem = {}, len = {}", slice[0], slice.len());
+	slice[0] = 87;
+	println!("slice {:?}", slice);
+	println!("data = {:?}", data);
+
+}
+
+fn sum_and_product(x:i32, y:i32) -> (i32, i32) {
+	(x+y, x*y)
+}
+
+fn tuples() {
+	let x = 3;
+	let y = 4;
+	let sp = sum_and_product(x,y);
+
+	println!("sp = {:?}", sp);
+	println!("{0} + {1} = {2} | {0} + {1} = {3}", x, y, sp.0, sp.1);
+
+	//destructuring
+	let (a,b) = sp;
+	println!("a = {}, b = {}", a,b);
+
+	let sp2 = sum_and_product(4,7);
+	let combined = (sp, sp2);
+	println!("{:?}", combined);
+	println!("last elem = {}", (combined.1).1);
+	let ((c,d),(e,f)) = combined;
+
+	let foo = (true, 42.9, -1i8);
+	println!("{:?}", foo);
+
+	let meaning = (42,); // tuple of single element
+}
+
+// Option<T>
+#[derive(Debug)] // to print
+struct Point<T> {
+	x: T,
+	y: T
+}
+
+struct Point2<T,V> {
+	x: T,
+	y: V
+}
+
+#[derive(Debug)] // to print
+struct Line<T> {
+	start: Point<T>,
+	end: Point<T>
+}
+
+fn generics() {
+	let p1 = Point{x:0, y:0};
+	let p2 = Point{x:1.2, y:3.4};
+
+	//explicit
+	let p3 = Point::<u8>{x:4, y:7};
+	let p4:Point<f64> = Point{x:3f64, y:2.8};
+
+	let p5:Point2<i32,u16> = Point2{x:-10, y:30};
+	let p6:Point2<f64,u8> = Point2{x:8.93, y:0};
+
+	//let line = Line{start:p1, end:p2}; // error: mismatched types `p2` expected integer, found floating-point number 
+	let line = Line{start:p1, end:p3};
+	println!("{:#?}", line);
+
+}
+
 fn main() {
     //core_data_types();
     
@@ -387,5 +574,21 @@ fn main() {
 
     //match_statement();
 
-    combination_lock();
+    //combination_lock();
+
+    //structures::structures();
+
+    //enumerates();
+
+    //option_t_and_if_let_while_let();
+
+    //arrays();
+
+    //slices();
+
+    //tuples();
+
+    //pm::pattern_matching();
+
+    generics();
 }
