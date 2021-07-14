@@ -595,6 +595,232 @@ fn vectors() {
 
 }
 
+use std::collections::HashMap;
+
+fn hashmaps() {
+	let mut shapes = HashMap::new();
+
+	shapes.insert(String::from("triangle"), 3);
+	shapes.insert(String::from("square"), 4);
+
+	println!("a square has {} sides", 
+		shapes["square".into()]);
+
+	shapes.insert("square".into(), 5);
+
+	for (key, value) in &shapes {
+		println!("{} : {}", key, value);
+	}
+
+	shapes.entry("cicle".into()).or_insert(1);
+	println!("{:?}", shapes);
+	{
+		let actual = shapes.entry("cicle".into()).or_insert(2);
+		*actual = 0;
+	}
+	println!("{:?}", shapes);	
+}
+
+use std::collections::HashSet;
+
+fn hashsets() {
+	let mut greeks = HashSet::new();
+	greeks.insert("gamma");
+	greeks.insert("delta");
+	println!("{:?}", greeks);
+
+	greeks.insert("delta");
+	println!("{:?}", greeks);
+
+	let added_vega = greeks.insert("vega");
+	if added_vega {
+		println!("We added vega!")
+	}
+	let added_vega_again = greeks.insert("vega");
+	if !added_vega_again {
+		println!("We don't added vega again!")
+	}
+
+	if !greeks.contains("kappa") {
+		println!("We don't contains kappa");
+	}
+
+	let removed = greeks.remove("delta");
+	if removed {
+		println!("We removed delta");
+	}
+	println!("{:?}", greeks);
+
+	let _1_5: HashSet<_> = (1..=5).collect();
+	let _6_10: HashSet<_> = (6..=10).collect();
+	let _1_10: HashSet<_> = (1..=10).collect();
+	let _2_8: HashSet<_> = (2..=8).collect();
+
+	// subset = if other contains at least all the values in self
+	println!("subset - is {:?} a subset of {:?}? {}",
+		_2_8, _1_10,
+		_2_8.is_subset(&_1_10));
+	
+	// disjoint = if self has no elements in common with other
+	println!("disjoint - is {:?} a disjoint of {:?}? {}",
+		_1_5, _6_10,
+		_1_5.is_disjoint(&_6_10));
+
+	// union = return all the values in self or other, without duplicates
+	println!("union - items in either {:?} and {:?} are {:?}",
+		_2_8, _6_10,
+		_2_8.union(&_6_10));
+
+	// intersection = return values that are both in self and other
+	println!("intersection - items in {:?} and {:?} are {:?}",
+		_2_8, _6_10,
+		_2_8.intersection(&_6_10));
+
+	// difference = return the values that are in self but not in other.
+	println!("difference - items in either {:?} but not in {:?} are {:?}",
+		_2_8, _6_10,
+		_2_8.difference(&_6_10));
+
+	// symmetric_difference = return values that are in self or in other but not in both.
+	println!("symmetric_difference - items in either {:?} or {:?} but not in both are {:?}",
+		_2_8, _6_10,
+		_2_8.symmetric_difference(&_6_10));
+
+}
+
+fn iterators() {
+	let vec = vec![3,2,1];
+
+	// for x in vec {
+	// 	println!("{}", x);
+	// }
+	// println!("{:?}", vec); // error: value borrowed here after move
+
+	for x in &vec {
+		println!("{}", *x);
+	}
+	for x in vec.iter().rev() {
+		println!("we got {}", x);
+	}
+	println!("vec = {:?}", vec);
+
+	let mut vec2 = vec![3,2,1];
+	for x in vec2.iter_mut() {
+		*x += 2;
+	}
+	println!("vec2 = {:?}", vec2);
+
+	let mut vec3 = vec![6];
+	vec3.extend(vec2);
+	println!("vec3 = {:?}", vec3);
+	//println!("vec2 = {:?}", vec2); // error: value borrowed here after move
+
+}
+
+fn strings() {
+	//utf-8
+	let s:&'static str = "Hello there!"; // &str = string slice
+	//s = "abc"
+	//let h = s[0];
+
+	for c in s.chars().rev() {
+		println!("{}", c);
+	}
+
+	if let Some(first_char) = s.chars().nth(0) {
+		println!("first letter is {}", first_char);
+	}
+
+	//heap
+	//String 
+	let mut letters = String::new(); // Datatype for string that can be modified
+	let mut l = 'a' as u8;
+	while l <= ('z' as u8) {
+		letters.push(l as char);
+		letters.push_str(";");
+		l += 1;
+	}
+	println!("letters = {}", letters);
+
+	//&str <> String
+	let u:&str = &letters;
+	println!("u = {}", u);
+
+	//concatentation
+	//String + str
+	let z = letters + "0;1;2;3;4;5;6;7;8;9;";
+	//println!("{}", letters); // error: value borrowed here after move
+	println!("z = {}", z);
+
+	let mut abc = "Hello world".to_string(); // or String::from("Hello world");
+	abc.remove(0);
+	abc.push_str("!!!");
+	println!("{}", abc.replace("ello", "goodbye"));
+}
+
+fn string_formatting() {
+	let name = "Leandro";
+	let greeting = format!("hi, I'm {}, nice to meet you", name);
+	println!("{}", greeting);
+
+	let hello = "hello";
+	let rust = "rust";
+	let hello_rust = format!("{}, {}!", hello, rust);
+	println!("{}", hello_rust);
+
+	let run = "run";
+	let forest = "forest";
+	let run_forest = format!("{0}, {1}, {0}!", run, forest);
+	println!("{}", run_forest);
+
+	let the_name = format!("the name's {last}. {first} {last}.", 
+		first = "James",
+		last = "Bond");
+	println!("{}", the_name);
+
+	let mixed = format!("{1} {} {0} {} {data}", 
+		"alpha",
+		"beta",
+		//"gamma", // error: argument never used
+		data = "delta");
+	println!("{}", mixed);
+}
+
+use rand::Rng;
+
+fn number_guessing_game(){
+	let number = rand::thread_rng().gen_range(1, 101);
+
+	loop {
+		println!("Enter your guess: ");
+		let mut buffer  = String::new();
+
+		match stdin().read_line(&mut buffer) {
+			Ok(_) => {
+				let parsed = buffer.trim_end().parse::<i64>();
+				match parsed {
+					Ok(guess) => {
+						if guess < 1 || guess > 100 {
+							println!("Your guess is out of range");
+						} else if guess < number {
+							println!("Your guess is too low");
+						} else if guess > number {
+							println!("Your guess is too high");
+						} else {
+							println!("Correct!");
+							break
+						}
+					},
+					Err(e) => {
+						println!("Could not read your input. {}. Try again!", e);
+					}
+				}
+			},
+			Err(_) => continue,
+		}
+	}
+}
+
 fn main() {
     //core_data_types();
     
@@ -638,5 +864,17 @@ fn main() {
 
     //generics();
 
-    vectors();
+    //vectors();
+
+    //hashmaps();
+
+    //hashsets();
+
+    //iterators();
+
+    //strings();
+
+    //string_formatting();
+
+    number_guessing_game();
 }
