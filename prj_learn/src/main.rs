@@ -5,6 +5,12 @@
 mod sh;
 mod pm;
 mod structures;
+mod functions;
+mod traits;
+mod drop;
+mod operator_overloading;
+mod dispatch;
+mod vectors;
 
 use std::mem;
 
@@ -549,51 +555,7 @@ fn generics() {
 
 }
 
-fn vectors() {
-	let mut vetor = Vec::new();
 
-	vetor.push(1); // add element
-	vetor.push(2);
-	vetor.push(3);
-
-	println!("{:?}", vetor);
-
-	println!("vetor[0] = {}", vetor[0]);
-
-	//let idx:i32 = 0; // error: the type `[{integer}]` cannot be indexed by `i32`
-	let mut idx:usize = 0;
-	vetor[idx] = 4;
-	println!("vetor[idx] = {}", vetor[idx]);
-
-	//let idx2:usize = 6;	
-	//vetor[idx2] = 4; // error: thread 'main' panicked at 'index out of bounds: the len is 3 but the index is 6'
-
-	idx = 5;
-	match vetor.get(idx) {
-		Some(x) => println!("vetor[{}] = {}", idx, x),
-		None => println!("error, no such '{}' element", idx)
-	}
-
-	for x in &vetor { println!("{}", x); }
-
-
-	let last_elem = vetor.pop(); // remove last element and return Option {Some(x) or None}
-	println!("last elem is {:?}, vetor = {:?}", last_elem, vetor);
-
-	let mut vetor2:Vec<u8> = Vec::new();
-	let last_elem2 = vetor2.pop();
-	println!("last elem 2 is {:?}, vetor2 = {:?}", last_elem2, vetor2);
-
-	while let Some(x) = vetor.pop() {
-		println!("{}", x)
-	}
-
-	while let Some(x) = vetor2.pop() {
-		println!("{}", x)
-	}
-
-
-}
 
 use std::collections::HashMap;
 
@@ -821,6 +783,33 @@ fn number_guessing_game(){
 	}
 }
 
+struct Person {
+	name: String
+}
+
+impl Person {
+	// fn new(name: &str) -> Person {
+	// 	Person { name: name.to_string() }
+	// }
+
+	//Convert param type where possible
+	//fn new<S: Into<String>>(name: S) -> Person {
+	fn new<S>(name: S) -> Person 
+	  where S: Into<String> {
+		Person { name: name.into() }
+	}
+}
+
+fn into() {
+	let john = Person::new("John");
+	println!("{}", john.name);
+
+	let name: String = "Jane".to_string();
+	//let jane = Person::new(name.as_ref()); // new(name: &str)
+	let jane = Person::new(name); // new<S: Into<String>>(name: S)
+	println!("{}", jane.name);
+}
+
 fn main() {
     //core_data_types();
     
@@ -864,7 +853,7 @@ fn main() {
 
     //generics();
 
-    //vectors();
+    //vectors::vectors();
 
     //hashmaps();
 
@@ -876,5 +865,30 @@ fn main() {
 
     //string_formatting();
 
-    number_guessing_game();
+    //number_guessing_game();
+
+    //functions::functions();
+
+    //structures::methods();
+
+    //functions::closures();
+
+    //functions::higher_order_functions();
+
+    //traits::traits();
+
+    //traits::trait_parameters();
+
+    //into();
+
+    //drop::drops();
+
+    //operator_overloading::operator_overloading();
+
+    //dispatch::static_dispatch();
+
+    //dispatch::dynamic_dispatch();
+
+    vectors::vectors_of_different_objects();
+
 }

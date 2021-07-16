@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
 struct Point {
 	x: f64,
 	y: f64
@@ -6,6 +10,15 @@ struct Point {
 struct Line {
 	start: Point,
 	end: Point
+}
+
+impl Line {
+	fn len(&self) -> f64 {
+		let dx = self.start.x - self.end.x;
+		let dy = self.start.y - self.end.y;
+
+		(dx*dx + dy*dy).sqrt()
+	}
 }
 
 #[derive(Debug)] // to print
@@ -51,4 +64,12 @@ pub fn structures() {
 
 	println!("{:?}", black);
 
+}
+
+pub fn methods() {
+	let p1:Point = Point{x: 3.0, y: 4.0};
+	let p2 = Point{x: 5.0, y: 10.0};
+	let my_line = Line{start: p1, end: p2};
+
+	println!("length = {}", my_line.len());
 }
