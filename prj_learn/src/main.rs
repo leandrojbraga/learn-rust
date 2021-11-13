@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_mut)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
 
 mod sh;
 mod pm;
@@ -11,6 +13,7 @@ mod drop;
 mod operator_overloading;
 mod dispatch;
 mod vectors;
+mod circular_references;
 
 use std::mem;
 
@@ -810,6 +813,204 @@ fn into() {
 	println!("{}", jane.name);
 }
 
+fn ownership() {
+	let v = vec![1,2,3];
+	//let v2 = v;
+	//println!("{:?}",v); // error: borrow of moved value: `v`
+
+	//let foo = |v:Vec<i32>| ();
+	//foo(v);
+	//println!("{:?}",v); // error: borrow of moved value: `v`
+
+	//let b1 = Box::new(1);
+	//let b2 = b1;
+	//println!("{:?}", *b1); // error: borrow of moved value: `b1`
+
+	let n1 = 1; //i32 implement Copy
+	let n2 = n1;
+	println!("{}", n1);
+	// others type implement Copy: 
+	// All the integer types, such as u32.
+	// The Boolean type, bool, with values true and false.
+	// All the floating point types, such as f64.
+	// The character type, char.
+	// Tuples, if they only contain types that also implement Copy. For example, (i32, i32) implements Copy, but (i32, String) does not.
+
+	let print_vector = |x: Vec<i32>| -> Vec<i32> {
+		println!("x = {:?}", x);
+		x
+	};
+
+	let vv = print_vector(v);
+	println!("vv = {:?}", vv);
+}
+
+fn borrowing() {
+	let print_vector = |x: &Vec<i32>| {
+		println!("x = {:?}", x);
+	};
+
+	let v = vec![1,2,3];
+	print_vector(&v);
+	println!("v = {:?}", v);
+
+	let mut n1 = 40;
+	{
+		let n2 = &mut n1;
+		*n2 += 2;
+	}	
+	println!("n1 = {}", n1);
+
+	let mut z = vec![3,2,1];
+
+	for i in &z {
+		println!("i = {}", i);
+		//z.push(5); // error: cannot borrow `z` as mutable because it is also borrowed as immutable
+	}
+
+}
+
+struct Employee { name: String }
+impl Employee {
+	//fn get_name_ref(&self) -> &String {
+	fn get_name_ref<'y>(&'y self) -> &'y String {
+		&self.name
+	}
+}
+
+struct Company<'z> {
+	name: String,
+	ceo: &'z Employee
+}
+
+fn lifetime() {
+	let boss = Employee{ name: String::from("Elon Musk") };
+	let tesla = Company{ name: String::from("Tesla"), ceo: &boss };
+	// error if not implemet Company<'a>: missing lifetime specifier
+
+	let mut name: &String;
+	{
+		let e = Employee{ name: String::from("John") };
+		name = e.get_name_ref();
+		println!("{}", name);
+	}
+}
+
+struct Persona<'a> {
+	name: &'a str
+}
+
+impl<'a> Persona<'a> {
+	fn talk(&self) {
+		println!("Hi, my name is {}.", self.name);
+	}
+}
+
+fn lifetime_in_structure_implementation() {
+	let p = Persona{ name: "Jane" };
+	p.talk();
+}
+
+use std::rc::Rc;
+
+struct Dog {
+	name: Rc<String>
+}
+
+impl Dog {
+	fn new(name: Rc<String>) -> Dog {
+		Dog{ name: name }
+	}
+
+	fn greet(&self) {
+		println!("Hi, my name is {}.", self.name);
+	}
+}
+
+fn reference_counted_variables() {
+	let mut name = Rc::new("Doguinho".to_string());
+	println!("Name = {}, name has {} strong pointers", name, Rc::strong_count(&name));
+	{
+		let dog = Dog::new(name.clone());
+		println!("Name = {}, name has {} strong pointers", name, Rc::strong_count(&name));
+		dog.greet();
+	}
+	println!("Name = {}, name has {} strong pointers", name, Rc::strong_count(&name));
+}
+
+use std::sync::{Mutex, Arc};
+use std::thread;
+
+struct Lhama {
+	name: Arc<String>,
+	state: Arc<Mutex<String>>
+
+}
+
+impl Lhama {
+	fn new(name: Arc<String>, state: Arc<Mutex<String>>) -> Lhama {
+		Lhama{ name: name, state: state }
+	}
+
+	fn greet(&self) {
+		let mut state = self.state.lock().unwrap();
+		state.clear();
+		state.push_str("excited");
+
+		println!("Hi, my name is {} and i'm {}.", self.name, state.as_str());
+	}
+}
+
+
+fn atomic_reference_counted_variables_and_mutex() {
+	let name = Arc::new("Carlos".to_string());
+	let state = Arc::new(Mutex::new("bored".to_string()));
+	let lhama = Lhama::new(name.clone(), state.clone());
+
+	let t = thread::spawn(move || {
+		lhama.greet();
+	});
+	println!("Name = {}, state = {}", name, state.lock().unwrap().as_str());
+
+	t.join().unwrap();
+}
+
+use std::time;
+
+fn spawning_and_joining_threads() {
+	let handle = thread::spawn(|| {
+		for _ in 1..10 {
+			print!("+");
+			thread::sleep(time::Duration::from_millis(500));
+		}
+	});
+
+	for _ in 1..10 {
+		print!("*");
+		thread::sleep(time::Duration::from_millis(300));
+	}
+
+	handle.join();
+
+}
+
+//extern crate phrases;
+
+use phrases::greetings::{english, french, portuguese};
+
+fn building_modules_cand_crates() {
+	println!("English: {}, {}",
+		english::hello(),
+		english::goodbye());
+	println!("French: {}, {}",
+		french::hello(),
+		french::goodbye());
+	println!("English: {}, {}",
+		portuguese::hello(),
+		portuguese::goodbye());
+	
+}
+
 fn main() {
     //core_data_types();
     
@@ -865,7 +1066,7 @@ fn main() {
 
     //string_formatting();
 
-    //number_guessing_game();
+    number_guessing_game();
 
     //functions::functions();
 
@@ -889,6 +1090,24 @@ fn main() {
 
     //dispatch::dynamic_dispatch();
 
-    vectors::vectors_of_different_objects();
+    //vectors::vectors_of_different_objects();
+
+    //ownership();
+
+    //borrowing();
+
+    //lifetime();
+
+    //lifetime_in_structure_implementation();
+
+    //reference_counted_variables();
+
+    //atomic_reference_counted_variables_and_mutex();
+
+    //circular_references::circular_references();
+
+    //spawning_and_joining_threads();
+
+    //building_modules_cand_crates();
 
 }
